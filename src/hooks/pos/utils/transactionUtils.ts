@@ -22,10 +22,10 @@ export const createTransaction = async (
       tax: tax,
       total: total,
       items: cartItems as unknown as Json, // Type assertion to match Supabase's Json type
-      status: 'completed',
+      status: paymentMethod === 'tab' ? 'open' : 'completed',
       payment_method: paymentMethod,
       cashier_id: null, // You would get this from auth context
-      completed_at: new Date().toISOString()
+      completed_at: paymentMethod === 'tab' ? null : new Date().toISOString()
     };
     
     const { data, error } = await supabase
@@ -59,7 +59,7 @@ export const processTransaction = async (
     // First, check stock availability for all items
     const stockAvailable = await checkStockAvailability(cartItems);
     if (!stockAvailable) {
-      toast.error('Some items in your cart are out of stock');
+      toast.error('Some items in your cart are out of stock or have insufficient quantity');
       return false;
     }
     
@@ -77,15 +77,23 @@ export const processTransaction = async (
       toast.error('Failed to create transaction');
       return false;
     }
-    
-    // Update inventory
+
+    // Update inventory for both completed transactions and tabs
+    // We always reduce inventory when items are added to a cart or sold
     const inventoryUpdated = await updateInventory(cartItems);
     if (!inventoryUpdated) {
       toast.error('Failed to update inventory');
+      // Consider transaction rollback here
       return false;
     }
     
-    toast.success('Transaction completed successfully');
+    // Show a detailed success message
+    if (paymentDetails.method === 'tab') {
+      toast.success('Items added to customer tab');
+    } else {
+      toast.success('Transaction completed successfully');
+    }
+    
     return true;
   } catch (error) {
     console.error('Error processing transaction:', error);
@@ -144,7 +152,7 @@ export const loadTabItems = async (tabId: string): Promise<{ cartItems: CartItem
 };
 
 // Helper to check if a JSON item is a valid cart item
-const isValidCartItem = (item: Json): boolean => {
+export const isValidCartItem = (item: Json): boolean => {
   return (
     typeof item === 'object' && 
     item !== null && 

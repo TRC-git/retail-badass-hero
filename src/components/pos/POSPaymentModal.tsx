@@ -6,6 +6,7 @@ import { PaymentMethodTabs } from "./payment/PaymentMethodTabs";
 import { PaymentActions } from "./payment/PaymentActions";
 import { usePaymentLogic } from "./payment/usePaymentLogic";
 import { supabase } from "@/integrations/supabase/client";
+import { updateInventory } from "@/hooks/pos/utils/inventoryUtils";
 
 export interface POSPaymentModalProps {
   open: boolean;
@@ -62,10 +63,16 @@ export function POSPaymentModal({
     }
   }, [open, total]);
 
-  // Enhanced payment processing with Supabase integration
+  // Enhanced payment processing with Supabase integration and real-time inventory updates
   const processPayment = async () => {
     try {
-      // First, save the transaction to Supabase
+      // Set processing state
+      setProcessing(true);
+      
+      // First, update the inventory in real-time
+      await updateInventory(cartItems);
+      
+      // Save the transaction to Supabase
       const { data, error } = await supabase
         .from('transactions')
         .insert({
@@ -82,7 +89,7 @@ export function POSPaymentModal({
 
       if (error) {
         console.error('Error saving transaction:', error);
-        // Continue with payment processing but log the error
+        throw new Error(`Failed to save transaction: ${error.message}`);
       } else {
         console.log('Transaction saved successfully:', data);
         
@@ -156,4 +163,3 @@ export function POSPaymentModal({
       </DialogContent>
     </Dialog>
   );
-}
