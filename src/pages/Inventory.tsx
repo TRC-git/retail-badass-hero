@@ -11,7 +11,7 @@ import { toast } from "sonner";
 const Inventory = () => {
   const [activeTab, setActiveTab] = useState<string>("products");
 
-  // Prevent default form submission behavior
+  // Prevent form submission behavior more aggressively
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -20,7 +20,15 @@ const Inventory = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-6" onSubmit={handleFormSubmit}>
+      <div 
+        className="container mx-auto p-6" 
+        onSubmit={handleFormSubmit}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            e.preventDefault();
+          }
+        }}
+      >
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Inventory Management</h1>
         </div>

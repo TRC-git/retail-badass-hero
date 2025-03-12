@@ -9,10 +9,15 @@ interface ProductActionsProps {
 }
 
 const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsProps) => {
+  const handleAddClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    handleAddProduct();
+  };
+
   return (
     <div className="flex space-x-2">
       <Button 
-        onClick={() => handleAddProduct()}
+        onClick={handleAddClick}
         className="flex items-center gap-1"
         type="button"
       >

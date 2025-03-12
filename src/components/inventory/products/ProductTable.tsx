@@ -23,6 +23,18 @@ const ProductTable = ({
   handleManageVariants,
   handleDeleteProduct
 }: ProductTableProps) => {
+  const handleEditClick = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleEditProduct(product);
+  };
+
+  const handleVariantClick = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleManageVariants(product);
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -70,7 +82,7 @@ const ProductTable = ({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleManageVariants(product)}
+                    onClick={(e) => handleVariantClick(e, product)}
                     className="flex items-center gap-1"
                     type="button"
                   >
@@ -86,7 +98,7 @@ const ProductTable = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => handleEditProduct(product)}
+                    onClick={(e) => handleEditClick(e, product)}
                     title="Edit product"
                     aria-label="Edit product"
                     type="button"

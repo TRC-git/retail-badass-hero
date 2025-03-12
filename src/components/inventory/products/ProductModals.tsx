@@ -28,7 +28,11 @@ const ProductModals: React.FC<ProductModalsProps> = ({
   setSelectedProduct,
   refreshProducts
 }) => {
-  const handleFormClose = () => {
+  const handleFormClose = (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     console.log("Closing form dialog");
     setShowAddForm(false);
     setShowEditForm(false);
@@ -36,10 +40,39 @@ const ProductModals: React.FC<ProductModalsProps> = ({
     refreshProducts();
   };
 
-  const handleVariantsClose = () => {
+  const handleVariantsClose = (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setShowVariantsManager(false);
     setSelectedProduct(null);
     refreshProducts();
+  };
+
+  // Handle dialog open change with event prevention
+  const handleAddFormOpenChange = (open: boolean) => {
+    if (!open) {
+      handleFormClose();
+    } else {
+      setShowAddForm(true);
+    }
+  };
+
+  const handleEditFormOpenChange = (open: boolean) => {
+    if (!open) {
+      handleFormClose();
+    } else {
+      setShowEditForm(true);
+    }
+  };
+
+  const handleVariantsOpenChange = (open: boolean) => {
+    if (!open) {
+      handleVariantsClose();
+    } else {
+      setShowVariantsManager(true);
+    }
   };
 
   return (
@@ -47,7 +80,7 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       {/* Dialog for adding products */}
       <Dialog 
         open={showAddForm} 
-        onOpenChange={setShowAddForm}
+        onOpenChange={handleAddFormOpenChange}
       >
         <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
           <DialogTitle>Add New Product</DialogTitle>
@@ -64,7 +97,7 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       {/* Dialog for editing products */}
       <Dialog 
         open={showEditForm} 
-        onOpenChange={setShowEditForm}
+        onOpenChange={handleEditFormOpenChange}
       >
         <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
           <DialogTitle>Edit Product</DialogTitle>
@@ -82,7 +115,7 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       {/* Dialog for managing variants */}
       <Dialog 
         open={showVariantsManager} 
-        onOpenChange={setShowVariantsManager}
+        onOpenChange={handleVariantsOpenChange}
       >
         <DialogContent className="sm:max-w-[800px] max-h-[90vh]">
           {showVariantsManager && selectedProduct && (

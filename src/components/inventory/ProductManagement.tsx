@@ -32,7 +32,12 @@ const ProductManagement = () => {
   );
 
   // Use useCallback to ensure the handler doesn't change between renders
-  const handleAddProduct = useCallback(() => {
+  const handleAddProduct = useCallback((e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     console.log("handleAddProduct called in ProductManagement");
     
     // First set selected product to null, then open the form
@@ -43,7 +48,12 @@ const ProductManagement = () => {
     console.log("Set showAddForm to true");
   }, [setSelectedProduct]);
 
-  const handleEditProduct = useCallback((product: any) => {
+  const handleEditProduct = useCallback((product: any, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     console.log("handleEditProduct called in ProductManagement for:", product.name);
     
     // Set the selected product first, then show the form
@@ -54,10 +64,14 @@ const ProductManagement = () => {
     console.log("Set showEditForm to true");
   }, [setSelectedProduct]);
 
-  const handleManageVariants = useCallback((product: any) => {
+  const handleManageVariants = useCallback((product: any, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     setSelectedProduct(product);
     setShowVariantsManager(true);
-    return false;
   }, [setSelectedProduct]);
 
   const handleDeleteProduct = async (id: string) => {
@@ -78,7 +92,7 @@ const ProductManagement = () => {
   console.log("Current add form dialog state:", showAddForm);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
       <ProductHeader 
         handleAddProduct={handleAddProduct} 
         refreshProducts={refreshProducts} 
