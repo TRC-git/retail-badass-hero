@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { formatTaxRulesFromSettings } from "@/utils/taxCalculator";
 import { calculateTotalTax } from "@/utils/taxCalculator";
@@ -12,54 +11,80 @@ import { getInventoryLevel } from "./utils/inventoryUtils";
 
 export { type CartItem, type Product, isValidCartItem } from "./types/cartTypes";
 
+interface RealtimeProductPayload {
+  new: {
+    id: string;
+    stock: number | null;
+    [key: string]: any;
+  };
+  old: {
+    id: string;
+    stock: number | null;
+    [key: string]: any;
+  };
+  eventType: string;
+}
+
+interface RealtimeVariantPayload {
+  new: {
+    id: string;
+    stock_count: number | null;
+    [key: string]: any;
+  };
+  old: {
+    id: string;
+    stock_count: number | null;
+    [key: string]: any;
+  };
+  eventType: string;
+}
+
 export const useCart = (taxRate: number) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [inventoryUpdated, setInventoryUpdated] = useState<boolean>(false);
 
-  // Set up real-time subscription for inventory changes
   useEffect(() => {
-    // Create a Supabase channel to listen for inventory changes
     const productsChannel = supabase
       .channel('real-time-inventory-products')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'products' }, 
         (payload) => {
           console.log('Product inventory changed:', payload);
-          // Update local cart items if the modified product is in the cart
-          updateCartItemStock(false, payload.new?.id, payload.new?.stock);
+          const newData = payload.new as RealtimeProductPayload['new'] | undefined;
+          if (newData && typeof newData.id === 'string') {
+            updateCartItemStock(false, newData.id, newData.stock);
+          }
         }
       )
       .subscribe();
       
-    // Create another channel for variant changes
     const variantsChannel = supabase
       .channel('real-time-inventory-variants')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'product_variants' }, 
         (payload) => {
           console.log('Variant inventory changed:', payload);
-          // Update local cart items if the modified variant is in the cart
-          updateCartItemStock(true, payload.new?.id, payload.new?.stock_count);
+          const newData = payload.new as RealtimeVariantPayload['new'] | undefined;
+          if (newData && typeof newData.id === 'string') {
+            updateCartItemStock(true, newData.id, newData.stock_count);
+          }
         }
       )
       .subscribe();
     
-    // Cleanup function
     return () => {
       supabase.removeChannel(productsChannel);
       supabase.removeChannel(variantsChannel);
     };
   }, [cartItems]);
   
-  // Helper function to update stock in cart items when inventory changes
-  const updateCartItemStock = (isVariant: boolean, id?: string, newStock?: number) => {
+  const updateCartItemStock = (isVariant: boolean, id?: string, newStock?: number | null) => {
     if (!id || newStock === undefined) return;
     
     setCartItems(current => 
       current.map(item => {
         if (isVariant && item.variant_id === id) {
-          // Update variant stock
           return {
             ...item,
             variant: item.variant ? {
@@ -68,7 +93,6 @@ export const useCart = (taxRate: number) => {
             } : null
           };
         } else if (!isVariant && item.id === id && !item.variant_id) {
-          // Update product stock
           return {
             ...item,
             stock: newStock
@@ -81,18 +105,14 @@ export const useCart = (taxRate: number) => {
     setInventoryUpdated(true);
   };
 
-  // Add product to cart, with or without a variant
   const addToCart = async (product: Product, variantId?: string) => {
     try {
-      // Prepare the item (with stock checks)
       const itemToAdd = await prepareCartItem(product, variantId);
       
       if (!itemToAdd) {
-        // Error message is already displayed in prepareCartItem
         return;
       }
       
-      // Update the cart
       const updatedCart = updateCartWithNewItem(cartItems, itemToAdd);
       setCartItems(updatedCart);
       
@@ -105,13 +125,10 @@ export const useCart = (taxRate: number) => {
 
   const updateItemQuantity = async (index: number, newQuantity: number) => {
     if (newQuantity <= 0) {
-      // Remove the item if quantity is 0 or negative
       removeItem(index);
     } else {
-      // Check stock before updating
       const item = cartItems[index];
       
-      // For variant products, get real-time inventory level
       if (item.variant_id && item.variant) {
         const currentStock = await getInventoryLevel(item.variant_id, true);
         
@@ -120,7 +137,6 @@ export const useCart = (taxRate: number) => {
           return;
         }
       } 
-      // For regular products, get real-time inventory level
       else {
         const currentStock = await getInventoryLevel(item.id);
         
@@ -130,7 +146,6 @@ export const useCart = (taxRate: number) => {
         }
       }
       
-      // Update quantity
       const updatedCart = [...cartItems];
       updatedCart[index].quantity = newQuantity;
       setCartItems(updatedCart);
@@ -151,10 +166,7 @@ export const useCart = (taxRate: number) => {
     return calculateSubtotal(cartItems);
   };
 
-  // Use the dynamic tax calculator
   const getTaxAmount = () => {
-    // For now we'll just use the default tax rate since we haven't stored
-    // the tax rules in the database yet
     const taxRules = formatTaxRulesFromSettings([], taxRate);
     return calculateTotalTax(
       cartItems.map(item => ({
@@ -171,7 +183,6 @@ export const useCart = (taxRate: number) => {
     return getSubtotal() + getTaxAmount();
   };
 
-  // Process the transaction and update inventory
   const processTransaction = async (paymentDetails: any) => {
     const result = await processTransactionUtil(
       cartItems,
@@ -193,10 +204,8 @@ export const useCart = (taxRate: number) => {
     try {
       const { cartItems: tabItems, customerId } = await loadTabItems(tabId);
       
-      // Set the cart items
       setCartItems(tabItems);
       
-      // Fetch and set customer if there's a customer_id
       if (customerId) {
         const { data: customerData, error: customerError } = await supabase
           .from("customers")
