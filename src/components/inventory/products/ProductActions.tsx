@@ -9,14 +9,16 @@ interface ProductActionsProps {
 }
 
 const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsProps) => {
-  // Enhanced event handling to absolutely prevent form submission
+  // Create separate click handlers with aggressive event prevention
   const handleAddClick = (e: React.MouseEvent) => {
-    // Prevent default to stop any form submission
+    // Stop the event completely to prevent any form submission
     e.preventDefault();
-    // Stop event propagation to prevent it from bubbling up to parent forms
     e.stopPropagation();
-    // Call the handler explicitly
-    handleAddProduct();
+    
+    // Use setTimeout to ensure we're out of the current event cycle
+    setTimeout(() => {
+      handleAddProduct();
+    }, 0);
   };
 
   const handleRefreshClick = (e: React.MouseEvent) => {

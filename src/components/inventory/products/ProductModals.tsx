@@ -28,16 +28,20 @@ const ProductModals: React.FC<ProductModalsProps> = ({
   setSelectedProduct,
   refreshProducts
 }) => {
-  // Enhanced handlers to absolutely prevent form submission
+  // Enhanced handlers with aggressive event prevention
   const handleFormClose = (e?: React.SyntheticEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    setShowAddForm(false);
-    setShowEditForm(false);
-    setSelectedProduct(null);
-    refreshProducts();
+    
+    // Use setTimeout to ensure we're outside the current event cycle
+    setTimeout(() => {
+      setShowAddForm(false);
+      setShowEditForm(false);
+      setSelectedProduct(null);
+      refreshProducts();
+    }, 0);
   };
 
   const handleVariantsClose = (e?: React.SyntheticEvent) => {
@@ -45,42 +49,23 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       e.preventDefault();
       e.stopPropagation();
     }
-    setShowVariantsManager(false);
-    setSelectedProduct(null);
-    refreshProducts();
+    
+    setTimeout(() => {
+      setShowVariantsManager(false);
+      setSelectedProduct(null);
+      refreshProducts();
+    }, 0);
   };
 
-  // Handle dialog open change with improved event handling
-  const handleAddFormOpenChange = (open: boolean, e?: React.SyntheticEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
+  // Completely prevent dialog closing through UI interactions
+  const handleDialogOpenChange = (open: boolean, modalType: 'add' | 'edit' | 'variants') => {
+    // Only handle closing through our controlled methods
     if (!open) {
-      handleFormClose();
-    }
-  };
-
-  const handleEditFormOpenChange = (open: boolean, e?: React.SyntheticEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    if (!open) {
-      handleFormClose();
-    }
-  };
-
-  const handleVariantsOpenChange = (open: boolean, e?: React.SyntheticEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    if (!open) {
-      handleVariantsClose();
+      if (modalType === 'add' || modalType === 'edit') {
+        handleFormClose();
+      } else {
+        handleVariantsClose();
+      }
     }
   };
 
@@ -89,12 +74,13 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       {/* Dialog for adding products */}
       <Dialog 
         open={showAddForm} 
-        onOpenChange={(open) => handleAddFormOpenChange(open)}
+        onOpenChange={(open) => handleDialogOpenChange(open, 'add')}
       >
         <DialogContent 
           className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar"
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
         >
           <DialogTitle>Add New Product</DialogTitle>
           {showAddForm && (
@@ -110,12 +96,13 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       {/* Dialog for editing products */}
       <Dialog 
         open={showEditForm} 
-        onOpenChange={(open) => handleEditFormOpenChange(open)}
+        onOpenChange={(open) => handleDialogOpenChange(open, 'edit')}
       >
         <DialogContent 
           className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar"
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
         >
           <DialogTitle>Edit Product</DialogTitle>
           {showEditForm && selectedProduct && (
@@ -132,12 +119,13 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       {/* Dialog for managing variants */}
       <Dialog 
         open={showVariantsManager} 
-        onOpenChange={(open) => handleVariantsOpenChange(open)}
+        onOpenChange={(open) => handleDialogOpenChange(open, 'variants')}
       >
         <DialogContent 
           className="sm:max-w-[800px] max-h-[90vh]"
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
         >
           {showVariantsManager && selectedProduct && (
             <ProductVariantsManager 

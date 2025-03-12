@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from "react";
 import { useProducts } from "@/contexts/ProductContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,37 +30,27 @@ const ProductManagement = () => {
     (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Enhanced handlers with better event prevention
-  const handleAddProduct = useCallback((e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    // First set selected product to null, then open the form
+  // Refactored to match the working variant button behavior
+  const handleAddProduct = useCallback(() => {
+    // First reset state
     setSelectedProduct(null);
-    
-    // Set timeout to ensure we're out of the current event cycle
+    // Then set the form visibility with setTimeout
     setTimeout(() => {
       setShowAddForm(true);
     }, 0);
   }, [setSelectedProduct]);
 
-  const handleEditProduct = useCallback((product: any, e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    // Set the selected product first, then show the form
+  // Refactored to match the working variant button behavior
+  const handleEditProduct = useCallback((product: any) => {
+    // First set the product
     setSelectedProduct(product);
-    
-    // Set timeout to ensure we're out of the current event cycle
+    // Then set the form visibility with setTimeout
     setTimeout(() => {
       setShowEditForm(true);
     }, 0);
   }, [setSelectedProduct]);
 
+  // Keep the working implementation
   const handleManageVariants = useCallback((product: any, e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
@@ -91,27 +80,30 @@ const ProductManagement = () => {
     }
   };
 
-  // Prevent form submissions at the component level
+  // Prevent form submissions using a global keydown listener
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent 'Enter' key from submitting forms when modals are open
       if (e.key === 'Enter' && (showAddForm || showEditForm || showVariantsManager)) {
         e.preventDefault();
+        e.stopPropagation();
+        return false;
       }
     };
     
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    // Add the event listener
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, { capture: true });
+    };
   }, [showAddForm, showEditForm, showVariantsManager]);
 
   return (
     <div 
       className="space-y-4" 
       onClick={(e) => e.stopPropagation()}
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }}
     >
       <ProductHeader 
         handleAddProduct={handleAddProduct} 

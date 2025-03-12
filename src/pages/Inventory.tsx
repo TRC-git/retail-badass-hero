@@ -11,19 +11,28 @@ import { toast } from "sonner";
 const Inventory = () => {
   const [activeTab, setActiveTab] = useState<string>("products");
   
-  // Enhanced method to aggressively prevent any form submission
+  // Add a more aggressive form submission preventer
   const preventFormSubmission = (e: React.FormEvent | React.MouseEvent) => {
-    if (e.target === e.currentTarget || (e.target as HTMLElement).tagName === "BUTTON") {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
   };
 
-  // Use effect to add global event listener to prevent form submissions
+  // Use effect to add global event listener to prevent unexpected behaviors
   useEffect(() => {
+    // Handler for any submit event at the document level
+    const handleSubmit = (e: Event) => {
+      // If we're on the inventory page and have open dialogs, prevent form submissions
+      const dialogs = document.querySelectorAll('[role="dialog"]');
+      if (dialogs.length > 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+    
+    // Prevent page unloads during modal operations
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Only prevent unload during modal operations - this is a safety measure
       const modalOpen = document.querySelector('[role="dialog"]');
       if (modalOpen) {
         e.preventDefault();
@@ -31,15 +40,20 @@ const Inventory = () => {
       }
     };
 
+    // Add global submit prevention
+    document.addEventListener('submit', handleSubmit, { capture: true });
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      document.removeEventListener('submit', handleSubmit, { capture: true });
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, []);
 
   return (
     <Layout>
       <div 
         className="container mx-auto p-6" 
-        onClick={preventFormSubmission}
         onSubmit={preventFormSubmission}
       >
         <div className="flex justify-between items-center mb-6">

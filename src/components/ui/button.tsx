@@ -44,9 +44,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, onClick, type = "button", ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     
-    // We're removing the automatic preventDefault here to avoid breaking normal button behavior
-    // Let individual components manage their own event handling instead
-    
+    // Forward the click handler without modification
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}

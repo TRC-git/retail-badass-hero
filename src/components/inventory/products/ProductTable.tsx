@@ -23,16 +23,25 @@ const ProductTable = ({
   handleManageVariants,
   handleDeleteProduct
 }: ProductTableProps) => {
+  // Enhanced click handlers with aggressive event prevention
   const handleEditClick = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
-    handleEditProduct(product);
+    
+    // Use setTimeout to ensure we're out of the current event cycle
+    setTimeout(() => {
+      handleEditProduct(product);
+    }, 0);
   };
 
   const handleVariantClick = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
-    handleManageVariants(product);
+    
+    // Use setTimeout to ensure we're out of the current event cycle
+    setTimeout(() => {
+      handleManageVariants(product);
+    }, 0);
   };
 
   return (
@@ -133,7 +142,11 @@ const ProductTable = ({
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-destructive text-destructive-foreground"
-                          onClick={() => handleDeleteProduct(product.id)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleDeleteProduct(product.id);
+                          }}
                         >
                           Delete
                         </AlertDialogAction>
