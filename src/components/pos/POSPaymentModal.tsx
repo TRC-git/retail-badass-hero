@@ -49,6 +49,7 @@ export function POSPaymentModal({
     checkNumber,
     setCheckNumber,
     processing,
+    setProcessing, // This was missing in the original code
     handleNumpadInput,
     handleGiftCardPaymentComplete,
     processPayment: processPaymentBase,
@@ -163,3 +164,4 @@ export function POSPaymentModal({
       </DialogContent>
     </Dialog>
   );
+}
