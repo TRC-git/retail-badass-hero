@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useProducts } from "@/contexts/ProductContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { deleteProduct } from "@/api/productApi";
@@ -31,21 +31,20 @@ const ProductManagement = () => {
     (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Use useCallback to ensure the handler doesn't change between renders
+  // Enhanced handlers with better event prevention
   const handleAddProduct = useCallback((e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     
-    console.log("handleAddProduct called in ProductManagement");
-    
     // First set selected product to null, then open the form
     setSelectedProduct(null);
     
-    // Explicitly set dialog state
-    setShowAddForm(true);
-    console.log("Set showAddForm to true");
+    // Set timeout to ensure we're out of the current event cycle
+    setTimeout(() => {
+      setShowAddForm(true);
+    }, 0);
   }, [setSelectedProduct]);
 
   const handleEditProduct = useCallback((product: any, e?: React.MouseEvent) => {
@@ -54,14 +53,13 @@ const ProductManagement = () => {
       e.stopPropagation();
     }
     
-    console.log("handleEditProduct called in ProductManagement for:", product.name);
-    
     // Set the selected product first, then show the form
     setSelectedProduct(product);
     
-    // Open the edit form modal
-    setShowEditForm(true);
-    console.log("Set showEditForm to true");
+    // Set timeout to ensure we're out of the current event cycle
+    setTimeout(() => {
+      setShowEditForm(true);
+    }, 0);
   }, [setSelectedProduct]);
 
   const handleManageVariants = useCallback((product: any, e?: React.MouseEvent) => {
@@ -71,7 +69,11 @@ const ProductManagement = () => {
     }
     
     setSelectedProduct(product);
-    setShowVariantsManager(true);
+    
+    // Set timeout to ensure we're out of the current event cycle
+    setTimeout(() => {
+      setShowVariantsManager(true);
+    }, 0);
   }, [setSelectedProduct]);
 
   const handleDeleteProduct = async (id: string) => {
@@ -89,10 +91,28 @@ const ProductManagement = () => {
     }
   };
 
-  console.log("Current add form dialog state:", showAddForm);
+  // Prevent form submissions at the component level
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && (showAddForm || showEditForm || showVariantsManager)) {
+        e.preventDefault();
+      }
+    };
+    
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [showAddForm, showEditForm, showVariantsManager]);
 
   return (
-    <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
+    <div 
+      className="space-y-4" 
+      onClick={(e) => e.stopPropagation()}
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }}
+    >
       <ProductHeader 
         handleAddProduct={handleAddProduct} 
         refreshProducts={refreshProducts} 

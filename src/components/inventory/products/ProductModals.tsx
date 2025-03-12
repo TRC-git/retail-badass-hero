@@ -28,12 +28,12 @@ const ProductModals: React.FC<ProductModalsProps> = ({
   setSelectedProduct,
   refreshProducts
 }) => {
+  // Enhanced handlers to absolutely prevent form submission
   const handleFormClose = (e?: React.SyntheticEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    console.log("Closing form dialog");
     setShowAddForm(false);
     setShowEditForm(false);
     setSelectedProduct(null);
@@ -50,28 +50,37 @@ const ProductModals: React.FC<ProductModalsProps> = ({
     refreshProducts();
   };
 
-  // Handle dialog open change with event prevention
-  const handleAddFormOpenChange = (open: boolean) => {
+  // Handle dialog open change with improved event handling
+  const handleAddFormOpenChange = (open: boolean, e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     if (!open) {
       handleFormClose();
-    } else {
-      setShowAddForm(true);
     }
   };
 
-  const handleEditFormOpenChange = (open: boolean) => {
+  const handleEditFormOpenChange = (open: boolean, e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     if (!open) {
       handleFormClose();
-    } else {
-      setShowEditForm(true);
     }
   };
 
-  const handleVariantsOpenChange = (open: boolean) => {
+  const handleVariantsOpenChange = (open: boolean, e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     if (!open) {
       handleVariantsClose();
-    } else {
-      setShowVariantsManager(true);
     }
   };
 
@@ -80,9 +89,13 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       {/* Dialog for adding products */}
       <Dialog 
         open={showAddForm} 
-        onOpenChange={handleAddFormOpenChange}
+        onOpenChange={(open) => handleAddFormOpenChange(open)}
       >
-        <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
+        <DialogContent 
+          className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogTitle>Add New Product</DialogTitle>
           {showAddForm && (
             <ProductForm 
@@ -97,9 +110,13 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       {/* Dialog for editing products */}
       <Dialog 
         open={showEditForm} 
-        onOpenChange={handleEditFormOpenChange}
+        onOpenChange={(open) => handleEditFormOpenChange(open)}
       >
-        <DialogContent className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar">
+        <DialogContent 
+          className="max-w-7xl max-h-[85vh] bg-background overflow-y-auto custom-scrollbar"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogTitle>Edit Product</DialogTitle>
           {showEditForm && selectedProduct && (
             <ProductForm 
@@ -115,9 +132,13 @@ const ProductModals: React.FC<ProductModalsProps> = ({
       {/* Dialog for managing variants */}
       <Dialog 
         open={showVariantsManager} 
-        onOpenChange={handleVariantsOpenChange}
+        onOpenChange={(open) => handleVariantsOpenChange(open)}
       >
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh]">
+        <DialogContent 
+          className="sm:max-w-[800px] max-h-[90vh]"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           {showVariantsManager && selectedProduct && (
             <ProductVariantsManager 
               product={selectedProduct} 

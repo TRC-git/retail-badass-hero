@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductManagement from "@/components/inventory/ProductManagement";
@@ -10,24 +10,37 @@ import { toast } from "sonner";
 
 const Inventory = () => {
   const [activeTab, setActiveTab] = useState<string>("products");
-
-  // Prevent form submission behavior more aggressively
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
+  
+  // Enhanced method to aggressively prevent any form submission
+  const preventFormSubmission = (e: React.FormEvent | React.MouseEvent) => {
+    if (e.target === e.currentTarget || (e.target as HTMLElement).tagName === "BUTTON") {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
   };
+
+  // Use effect to add global event listener to prevent form submissions
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Only prevent unload during modal operations - this is a safety measure
+      const modalOpen = document.querySelector('[role="dialog"]');
+      if (modalOpen) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   return (
     <Layout>
       <div 
         className="container mx-auto p-6" 
-        onSubmit={handleFormSubmit}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            e.preventDefault();
-          }
-        }}
+        onClick={preventFormSubmission}
+        onSubmit={preventFormSubmission}
       >
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Inventory Management</h1>

@@ -9,13 +9,24 @@ interface ProductActionsProps {
 }
 
 const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsProps) => {
+  // Enhanced event handling to absolutely prevent form submission
   const handleAddClick = (e: React.MouseEvent) => {
+    // Prevent default to stop any form submission
     e.preventDefault();
+    // Stop event propagation to prevent it from bubbling up to parent forms
+    e.stopPropagation();
+    // Call the handler explicitly
     handleAddProduct();
   };
 
+  const handleRefreshClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    refreshProducts();
+  };
+
   return (
-    <div className="flex space-x-2">
+    <div className="flex space-x-2" onClick={(e) => e.stopPropagation()}>
       <Button 
         onClick={handleAddClick}
         className="flex items-center gap-1"
@@ -26,7 +37,7 @@ const ProductActions = ({ handleAddProduct, refreshProducts }: ProductActionsPro
       </Button>
       <Button 
         variant="outline" 
-        onClick={refreshProducts}
+        onClick={handleRefreshClick}
         className="flex items-center gap-1"
         type="button"
       >
