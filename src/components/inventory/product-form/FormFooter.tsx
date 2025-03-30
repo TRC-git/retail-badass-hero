@@ -35,7 +35,7 @@ const FormFooter: React.FC<FormFooterProps> = ({
         className="min-w-[120px]"
       >
         <Save className="mr-2 h-4 w-4" />
-        {isSubmitting ? 'Saving...' : 'Save Product'}
+        {isSubmitting ? 'Saving...' : hasVariants ? 'Save & Continue' : 'Save Product'}
       </Button>
       {isEditing && hasVariants && (
         <Button 

@@ -125,7 +125,7 @@ const useProductForm = ({ product, productId, onClose, onSave }: UseProductFormP
         sku: data.sku,
         barcode: data.barcode,
         image_url: data.image_url,
-        category_id: data.category_id,
+        category_id: data.category_id === "none" ? null : data.category_id,
         category: data.category,
         has_variants: Boolean(data.has_variants)
       };
@@ -135,14 +135,28 @@ const useProductForm = ({ product, productId, onClose, onSave }: UseProductFormP
       if (isEditing && (productId || (product && product.id))) {
         savedProduct = await updateProduct(productId || (product?.id as string), productData);
         setCurrentProduct(savedProduct);
+        
+        if (data.has_variants) {
+          // If editing a product with variants, show variant manager
+          toast.success("Product updated successfully");
+          setShowVariantsManager(true);
+          return; // Don't close form yet
+        }
       } else {
         savedProduct = await createProduct(productData);
-        setCurrentProduct(savedProduct);
         
-        // If the product has variants, show the variants manager immediately
-        if (data.has_variants && savedProduct) {
-          setShowVariantsManager(true);
-          return; // Don't close the form yet
+        if (savedProduct) {
+          setCurrentProduct(savedProduct);
+          console.log("New product created:", savedProduct);
+          toast.success("Product created successfully");
+          
+          // If the product has variants, show the variants manager immediately
+          if (data.has_variants) {
+            setShowVariantsManager(true);
+            return; // Don't close the form yet
+          }
+        } else {
+          throw new Error("Failed to create product");
         }
       }
     
