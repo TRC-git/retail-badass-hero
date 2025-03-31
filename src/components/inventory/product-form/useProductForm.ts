@@ -115,6 +115,7 @@ const useProductForm = ({ product, productId, onClose, onSave }: UseProductFormP
   
     try {
       setIsSubmitting(true);
+      console.log("Submitting product data:", data);
     
       const productData = {
         name: data.name,
@@ -133,7 +134,9 @@ const useProductForm = ({ product, productId, onClose, onSave }: UseProductFormP
       let savedProduct: Product | null = null;
       
       if (isEditing && (productId || (product && product.id))) {
-        savedProduct = await updateProduct(productId || (product?.id as string), productData);
+        const id = productId || (product?.id as string);
+        console.log("Updating product with ID:", id);
+        savedProduct = await updateProduct(id, productData);
         
         if (savedProduct) {
           setCurrentProduct(savedProduct);
@@ -148,6 +151,7 @@ const useProductForm = ({ product, productId, onClose, onSave }: UseProductFormP
           throw new Error("Failed to update product");
         }
       } else {
+        console.log("Creating new product");
         savedProduct = await createProduct(productData);
         
         if (savedProduct) {
@@ -172,7 +176,7 @@ const useProductForm = ({ product, productId, onClose, onSave }: UseProductFormP
     
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error('Failed to save product');
+      toast.error('Failed to save product: ' + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setIsSubmitting(false);
     }

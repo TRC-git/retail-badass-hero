@@ -19,7 +19,7 @@ export const createProduct = async (product: ProductInsert): Promise<Product | n
 
     const { data, error } = await supabase
       .from("products")
-      .insert(productData as ProductInsert)
+      .insert(productData)
       .select()
       .single();
       
@@ -29,11 +29,9 @@ export const createProduct = async (product: ProductInsert): Promise<Product | n
     }
     
     console.log("Product created successfully:", data);
-    toast.success("Product created successfully");
     return data;
   } catch (error) {
     console.error("Error creating product:", error);
-    toast.error(`Failed to create product: ${error instanceof Error ? error.message : "Unknown error"}`);
-    return null;
+    throw error; // Let the calling function handle the error
   }
 };
