@@ -134,13 +134,18 @@ const useProductForm = ({ product, productId, onClose, onSave }: UseProductFormP
       
       if (isEditing && (productId || (product && product.id))) {
         savedProduct = await updateProduct(productId || (product?.id as string), productData);
-        setCurrentProduct(savedProduct);
         
-        if (data.has_variants) {
-          // If editing a product with variants, show variant manager
+        if (savedProduct) {
+          setCurrentProduct(savedProduct);
           toast.success("Product updated successfully");
-          setShowVariantsManager(true);
-          return; // Don't close form yet
+          
+          if (data.has_variants) {
+            // If editing a product with variants, show variant manager
+            setShowVariantsManager(true);
+            return; // Don't close form yet
+          }
+        } else {
+          throw new Error("Failed to update product");
         }
       } else {
         savedProduct = await createProduct(productData);

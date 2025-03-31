@@ -1,10 +1,11 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription
 } from '@/components/ui/dialog';
 import { Product } from '@/types';
 import ProductVariantsManager from '../ProductVariantsManager';
@@ -30,6 +31,9 @@ const VariantManagerModal: React.FC<VariantManagerModalProps> = ({
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden p-0">
         <DialogHeader className="px-6 pt-6 pb-2">
           <DialogTitle>Manage Product Variants: {product.name}</DialogTitle>
+          <DialogDescription>
+            Add and edit variants for this product
+          </DialogDescription>
         </DialogHeader>
         
         <div className="px-6 pb-6">
