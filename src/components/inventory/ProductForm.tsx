@@ -11,7 +11,7 @@ import InventoryDetails from './product-form/InventoryDetails';
 import FormHeader from './product-form/FormHeader';
 import FormFooter from './product-form/FormFooter';
 import VariantManagerModal from './product-form/VariantManagerModal';
-import useProductForm from './product-form/useProductForm';
+import useProductForm from '@/hooks/useProductForm';
 
 interface ProductFormProps {
   product?: Product;
