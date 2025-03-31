@@ -9,30 +9,6 @@ export const updateVariant = async (id: string, variant: VariantUpdate): Promise
   try {
     console.log("Updating variant ID:", id, "with data:", variant);
     
-    // When updating, we shouldn't require the product_id to be present
-    // Let's check if we need to fetch it first
-    if (!variant.product_id) {
-      // Fetch the current variant to get its product_id
-      const { data: currentVariant, error: fetchError } = await supabase
-        .from("product_variants")
-        .select("product_id")
-        .eq("id", id)
-        .single();
-        
-      if (fetchError) {
-        console.error("Error fetching variant data for update:", fetchError);
-        throw fetchError;
-      }
-      
-      if (currentVariant && currentVariant.product_id) {
-        // Add the product_id to the update data
-        variant.product_id = currentVariant.product_id;
-      } else {
-        console.error("Could not find product_id for variant:", id);
-        throw new Error("Variant not found or missing product_id");
-      }
-    }
-    
     // Clean the variant data before sending to Supabase
     const variantData = cleanVariantData(variant as any);
     

@@ -67,10 +67,7 @@ const VariantsTable = ({
                     min="0"
                     step="0.01"
                     value={variant.price || 0}
-                    onChange={(e) => handleUpdateVariant(variant.id, { 
-                      price: Number(e.target.value),
-                      product_id: variant.product_id // Ensure product_id is included
-                    })}
+                    onChange={(e) => handleUpdateVariant(variant.id, { price: Number(e.target.value) })}
                     className="w-24"
                   />
                 </TableCell>
@@ -80,10 +77,7 @@ const VariantsTable = ({
                     min="0"
                     step="1"
                     value={variant.stock_count || 0}
-                    onChange={(e) => handleUpdateVariant(variant.id, { 
-                      stock_count: Number(e.target.value),
-                      product_id: variant.product_id // Ensure product_id is included
-                    })}
+                    onChange={(e) => handleUpdateVariant(variant.id, { stock_count: Number(e.target.value) })}
                     className="w-24"
                   />
                 </TableCell>

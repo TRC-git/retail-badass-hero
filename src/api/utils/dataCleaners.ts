@@ -1,3 +1,4 @@
+
 import { ProductInsert } from "../types/productTypes";
 import { VariantInsert } from "../types/variantTypes";
 
@@ -31,14 +32,14 @@ export const cleanProductData = (product: ProductInsert): ProductInsert => {
 
 // Clean variant data before sending to the database
 export const cleanVariantData = (variant: VariantInsert): VariantInsert => {
-  // For updates, product_id might come from the database fetch, so we'll be more lenient
+  // Ensure required fields are included
   if (!variant.product_id) {
-    console.warn("Warning: Missing product_id in variant data");
+    throw new Error("Product ID is required for variants");
   }
 
-  // Create a clean variant object, preserving all fields that are present
+  // Create a clean variant object
   const cleanedVariant: VariantInsert = {
-    product_id: variant.product_id, // Keep as is, may be undefined for updates
+    product_id: variant.product_id,
     price: variant.price !== undefined ? variant.price : 0,
     sku: variant.sku || null,
     stock_count: variant.stock_count !== undefined ? variant.stock_count : null,
