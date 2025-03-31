@@ -17,31 +17,37 @@ export function useProductSubmit(
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (data: ProductFormData): Promise<boolean> => {
-    if (!data.name) {
-      toast.error("Product name is required");
-      return false;
-    }
-  
-    if (data.price === undefined || isNaN(Number(data.price))) {
-      toast.error("Valid product price is required");
-      return false;
-    }
-  
     try {
+      if (!data.name) {
+        toast.error("Product name is required");
+        return false;
+      }
+    
+      if (data.price === undefined || isNaN(Number(data.price))) {
+        toast.error("Valid product price is required");
+        return false;
+      }
+      
       setIsSubmitting(true);
       console.log("Submitting product data:", data);
     
+      // Process category_id properly
+      let categoryId = data.category_id;
+      if (categoryId === "" || categoryId === "none") {
+        categoryId = null;
+      }
+      
       const productData = {
         name: data.name,
-        description: data.description,
+        description: data.description || "",
         price: Number(data.price),
-        cost: data.cost !== undefined ? Number(data.cost) : undefined,
-        stock: data.stock !== undefined ? Number(data.stock) : undefined,
-        sku: data.sku,
-        barcode: data.barcode,
-        image_url: data.image_url,
-        category_id: data.category_id === "none" ? null : data.category_id,
-        category: data.category,
+        cost: data.cost !== undefined ? Number(data.cost) : null,
+        stock: data.stock !== undefined ? Number(data.stock) : null,
+        sku: data.sku || "",
+        barcode: data.barcode || "",
+        image_url: data.image_url || "",
+        category_id: categoryId,
+        category: data.category || "",
         has_variants: Boolean(data.has_variants)
       };
     
@@ -50,36 +56,46 @@ export function useProductSubmit(
       if (isEditing && (productId || (product && product.id))) {
         const id = productId || (product?.id as string);
         console.log("Updating product with ID:", id);
-        savedProduct = await updateProduct(id, productData);
         
-        if (savedProduct) {
-          setCurrentProduct(savedProduct);
-          toast.success("Product updated successfully");
-          
-          if (data.has_variants) {
-            // If editing a product with variants, show variant manager
-            setShowVariantsManager(true);
-            return true; // Don't close form yet
+        try {
+          savedProduct = await updateProduct(id, productData);
+          if (!savedProduct) {
+            throw new Error("Failed to update product - no data returned");
           }
-        } else {
-          throw new Error("Failed to update product");
+        } catch (updateError) {
+          console.error("Error in updateProduct API call:", updateError);
+          throw updateError;
+        }
+        
+        setCurrentProduct(savedProduct);
+        toast.success("Product updated successfully");
+        
+        if (data.has_variants) {
+          // If editing a product with variants, show variant manager
+          setShowVariantsManager(true);
+          return true; // Don't close form yet
         }
       } else {
-        console.log("Creating new product");
-        savedProduct = await createProduct(productData);
+        console.log("Creating new product with data:", productData);
         
-        if (savedProduct) {
-          setCurrentProduct(savedProduct);
-          console.log("New product created:", savedProduct);
-          toast.success("Product created successfully");
-          
-          // If the product has variants, show the variants manager immediately
-          if (data.has_variants) {
-            setShowVariantsManager(true);
-            return true; // Don't close the form yet
+        try {
+          savedProduct = await createProduct(productData);
+          if (!savedProduct) {
+            throw new Error("Failed to create product - no data returned");
           }
-        } else {
-          throw new Error("Failed to create product");
+        } catch (createError) {
+          console.error("Error in createProduct API call:", createError);
+          throw createError;
+        }
+        
+        console.log("New product created:", savedProduct);
+        setCurrentProduct(savedProduct);
+        toast.success("Product created successfully");
+        
+        // If the product has variants, show the variants manager immediately
+        if (data.has_variants) {
+          setShowVariantsManager(true);
+          return true; // Don't close the form yet
         }
       }
     

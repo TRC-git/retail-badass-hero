@@ -24,6 +24,9 @@ export const cleanProductData = (product: ProductInsert): ProductInsert => {
     has_variants: product.has_variants || false
   };
 
+  // Logging for debugging
+  console.log("Cleaned product data:", JSON.stringify(cleanedProduct, null, 2));
+  
   return cleanedProduct;
 };
 

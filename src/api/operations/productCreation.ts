@@ -28,6 +28,10 @@ export const createProduct = async (product: ProductInsert): Promise<Product | n
       throw error;
     }
     
+    if (!data) {
+      throw new Error("No data returned from product creation");
+    }
+    
     console.log("Product created successfully:", data);
     return data;
   } catch (error) {
